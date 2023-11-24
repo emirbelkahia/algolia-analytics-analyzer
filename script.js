@@ -322,10 +322,17 @@ function parseCSV(csvData, numQueries) {
 }
 
 function calculateAttributePercentage(jsonData, attributeToRetrieve, attributeValue) {
-    // Logging the start of the calculation process
+    // Logging the start of the process
     console.log("Starting calculation of attribute percentages...");
     console.log("JSON Data:", jsonData);
     console.log("Attribute to Retrieve:", attributeToRetrieve, "Attribute Value:", attributeValue);
+
+    // Convert attributeValue to the correct type if necessary (for boolean values)
+    if (attributeValue === "true") {
+        attributeValue = true;
+    } else if (attributeValue === "false") {
+        attributeValue = false;
+    }
 
     // Object to store the count of matching hits for each query
     let queryResults = {};
@@ -343,8 +350,9 @@ function calculateAttributePercentage(jsonData, attributeToRetrieve, attributeVa
 
             // Check if the hit's attribute matches the specified value
             if (hit[attributeToRetrieve] === attributeValue) {
+                console.log(`Match found for query "${queryObj.query}"`);
                 // Increment the count for this query
-                queryResults[queryObj.query].count += 1;
+                queryResults[queryObj.query].count++;
             }
         });
 
@@ -353,27 +361,27 @@ function calculateAttributePercentage(jsonData, attributeToRetrieve, attributeVa
 
     console.log("Accumulated Query Results:", queryResults);
 
-    // Calculate percentages for each query
+    // Array to store calculated percentages for each query
     let percentages = [];
     for (const query in queryResults) {
         // Calculate percentage
         let percentage = (queryResults[query].count / queryResults[query].totalHits) * 100;
         
-        // Add the calculated percentage to the array
-        percentages.push({ 
-            query: query, 
-            // Include the attribute value in the column header
+        // Construct the percentage data object for each query
+        let percentageData = { 
+            query: query,
             [`percentage of ${attributeToRetrieve} (${attributeValue})`]: percentage.toFixed(2),
             totalHits: queryResults[query].totalHits
-        });
+        };
+        
+        console.log(`Calculated percentage data for query "${query}":`, percentageData);
 
-        console.log(`Calculated percentage for query "${query}": ${percentage.toFixed(2)}%`);
+        // Add the calculated percentage data to the percentages array
+        percentages.push(percentageData);
     }
 
-    // Log the final percentages array
+    // Log the final array of percentages
     console.log("Final Percentages:", percentages);
     return percentages;
 }
-
-
 
