@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Algolia Analytics - Analyzer of hits</title>
+    <link rel="stylesheet" href="styles.css"> <!-- Correct path to CSS file -->
+    <script src="script.js" defer></script> <!-- Correct path to JavaScript file -->
+</head>
+<body>
+
+    <!-- Tool Introduction Header -->
+    <header class="tool-introduction">
+        <h1>Algolia Analytics - Analyzer of this</h1>
+        <p>Goal: Extracting the percentage of specific results within the top search results.</p>
+        <p>Example of use case: Evaluating the percentage of out-of-stock products in the first result page</p>
+        <ul>
+            <li>Step 1: Extract top searches from the Analytics API.</li>
+            <li>Step 2: Retrieve hits via the Search API.</li>
+            <li>Step 3: Calculate the percentage of hits with a specified attribute and value, and download results as a CSV file.</li>
+        </ul>
+    </header>
+
+    <!-- Section 1 -->
+    <section id="section1">
+        <h2>Section 1: Information Gathering</h2>
+        <p class="section-description">Please enter the following information to generate the CSV file. (Customize this explanation)</p>
+        <form id="form1">
+            <!-- Input fields for Section 1 -->
+            <label for="applicationId">Algolia APP ID:</label>
+            <input type="text" id="applicationId" name="input1" placeholder="Enter you Algolia appID" required value="932LAAGOT3">
+            <label for="analyticsApiKey">Analytics API Key:</label>
+            <input type="text" id="analyticsApiKey" name="input1" placeholder="Enter Analytics API Key" required value="2a545198fc57a6355ed111d9319bf8c5">
+            <label for="indexName">Index Name:</label>
+            <input type="text" id="indexName" name="input1" placeholder="Enter your index name" required value="atis-prods">
+            <div class="form-group" style="display: flex; align-items: center;">
+                <input type="checkbox" id="debugModeCheckbox" name="debugMode" style="margin-right: 10px;">
+                <label for="debugMode">I already have my csv file containing top searches</label>
+            </div>
+            <button type="submit">Generate my CSV file</button>
+        </form>
+        <!-- Output table for Section 1 -->
+        <div id="output1" style="display: none;">
+            <!-- Dynamic content will be added here -->
+        </div>
+    </section>
+
+    <!-- Section 2 -->
+    <section id="section2" style="display: none;">
+        <h2>Section 2: Search Extraction</h2>
+        <p class="section-description">We'll now pass to the engine the amount of searches you indicated above.</p>
+        <form id="form2">
+            <label for="searchApiKey">Search API Key:</label>
+            <input type="text" id="searchApiKey" name="searchApiKey" required value="0231bece3787c8dd5bcc328a11bdfdef">
+
+            <label for="csvFile">Upload CSV File:</label>
+            <input type="file" id="csvFile" name="csvFile" accept=".csv" required>
+
+            <label for="numSearchesToProcess">Number of Searches to Process (max 1000):</label>
+            <input type="number" id="numSearchesToProcess" name="numSearchesToProcess" min="1" max="1000" required value="15">
+
+            <label for="attributeToRetrieve">Attribute to Retrieve:</label>
+            <input type="text" id="attributeToRetrieve" name="attributeToRetrieve" required value="featured">
+
+            <label for="numResults">Number of Results per Search:</label>
+            <input type="number" id="numResults" name="numResults" min="1" required value="60">
+
+            <button type="submit">Run Hits Extraction</button>
+        </form>
+        <div id="output2" style="display: none;">
+            <!-- JSON download link will be added here -->
+        </div>
+    </section>
+
+    <!-- Section 3 -->
+    <section id="section3" style="display: none;">
+        <h2>Section 3: Attribute Analysis</h2>
+        <p class="section-description">Upload the JSON file and specify the value of the attribute to analyze.</p>
+        <form id="form3">
+            <label for="jsonFile">Upload JSON File:</label>
+            <input type="file" id="jsonFile" name="jsonFile" accept=".json" required>
+
+            <label for="attributeValue">Entre the Value of Attribute to Analyze (e.g True, yellow, ...):</label>
+            <input type="text" id="attributeValue" name="attributeValue" required value="mirakl">
+
+            <button type="submit">Analyze and Generate CSV</button>
+        </form>
+        <div id="output3" style="display: none;">
+            <!-- CSV preview and download link will be added here -->
+        </div>
+    </section>
+
+</body>
+</html>

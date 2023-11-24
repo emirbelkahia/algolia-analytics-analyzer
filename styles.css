@@ -1,0 +1,140 @@
+/* Header Styles */
+.tool-introduction {
+    background-color: #f8f8f8;
+    border-bottom: 2px solid #eaeaea;
+    padding: 20px;
+    text-align: center;
+}
+
+.tool-introduction h1 {
+    color: #333;
+    font-size: 24px;
+}
+
+.tool-introduction p {
+    color: #666;
+    font-size: 16px;
+}
+
+.tool-introduction ul {
+    list-style: inside square;
+    margin-top: 10px;
+}
+
+.tool-introduction li {
+    color: #333;
+    font-size: 14px;
+}
+
+/* General Styles */
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f4f4f4;
+    color: #333;
+    line-height: 1.6;
+    padding: 10px;
+}
+
+h2 {
+    color: #333;
+}
+
+/* Section Styles */
+section {
+    background: #fff;
+    margin: 20px 0;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Form Styles */
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+input[type="text"] {
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 16px;
+}
+
+input[type="text"]:focus {
+    border-color: #7dade2;
+    outline: none;
+}
+
+/* Button Styles */
+button {
+    cursor: pointer;
+    background-color: #7dade2;
+    color: #fff;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 4px;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+}
+
+button:hover {
+    background-color: #5691c8;
+}
+
+/* Output Styles */
+div[id^="output"] {
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 15px;
+    margin-top: 20px;
+    background-color: #fafafa;
+}
+
+/* Debug Styles */
+.debug-explanation {
+    font-style: italic;
+    color: #666;
+}
+
+/* Table Styles */
+table {
+    width: 60%; /* Adjusted width */
+    margin: 20px auto; /* Centering the table */
+    border-collapse: collapse;
+}
+
+table, th, td {
+    border: 1px solid #ddd;
+    font-family: 'Courier New', monospace; /* Programmatic font */
+}
+
+th, td {
+    text-align: left;
+    padding: 8px;
+}
+
+th {
+    background-color: #4CAF50; /* Changed header color */
+    color: white;
+}
+
+tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+tr:hover {
+    background-color: #ddd;
+}
+
+#jsonPreview {
+    background-color: #f4f4f4;
+    border: 1px solid #ddd;
+    padding: 10px;
+    border-radius: 4px;
+    font-family: 'Courier New', monospace;
+    white-space: pre-wrap; /* Wrap text */
+    max-height: 200px; /* Limit height */
+    overflow-y: auto; /* Add scroll for overflow */
+}
