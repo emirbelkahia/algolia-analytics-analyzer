@@ -117,6 +117,11 @@ document.addEventListener("DOMContentLoaded", () => {
             const queries = parseCSV(csvData, numSearchesToProcess);
             console.log("Extracted queries:", queries);
 
+            // Generate a random token for userToken
+            let randomToken = Math.random().toString(36).substring(2, 15); // Generate a random string
+            let userToken = `analytics-analyzer-${randomToken}`; // Concatenate with the prefix
+            console.log("UserToken Generated:", userToken); // Display the generated userToken
+
             // Initialize results array
             let results = [];
 
@@ -124,7 +129,16 @@ document.addEventListener("DOMContentLoaded", () => {
                 console.log("Processing query:", query);
 
                 // Set up API request parameters
-                let queryParams = `query=${encodeURIComponent(query)}&hitsPerPage=${numResults}&attributesToRetrieve=${encodeURIComponent(attributeToRetrieve)},objectID`;
+                let queryParams = {
+                    query: query,
+                    hitsPerPage: numResults,
+                    attributesToRetrieve: [attributeToRetrieve, 'objectID'],
+                    getRankingInfo: true, // Include detailed ranking information
+                    analytics: false, // Disable analytics for this query
+                    clickAnalytics: false, // Disable click analytics
+                    userToken: userToken // Add userToken with the generated value
+                };
+
                 let response = await fetch(`https://${applicationId}-dsn.algolia.net/1/indexes/${indexName}/query`, {
                     method: 'POST',
                     headers: {
@@ -132,7 +146,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         'X-Algolia-Application-Id': applicationId,
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ params: queryParams })
+                    body: JSON.stringify(queryParams) // Send queryParams as the request body
                 });
 
                 // Check API response status
@@ -142,6 +156,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
 
                 let data = await response.json();
+                console.log("Index Used:", data.indexUsed); // Display the index used
+                console.log("AB Test ID:", data.abTestID); // Display the AB Test ID
+                console.log("AB Test Variant ID:", data.abTestVariantID); // Display the AB Test Variant ID
 
                 // Process hits for each query
                 let queryResults = data.hits.map(hit => ({
@@ -322,17 +339,10 @@ function parseCSV(csvData, numQueries) {
 }
 
 function calculateAttributePercentage(jsonData, attributeToRetrieve, attributeValue) {
-    // Logging the start of the process
+    // Logging the start of the calculation process
     console.log("Starting calculation of attribute percentages...");
     console.log("JSON Data:", jsonData);
     console.log("Attribute to Retrieve:", attributeToRetrieve, "Attribute Value:", attributeValue);
-
-    // Convert attributeValue to the correct type if necessary (for boolean values)
-    if (attributeValue === "true") {
-        attributeValue = true;
-    } else if (attributeValue === "false") {
-        attributeValue = false;
-    }
 
     // Object to store the count of matching hits for each query
     let queryResults = {};
@@ -350,9 +360,8 @@ function calculateAttributePercentage(jsonData, attributeToRetrieve, attributeVa
 
             // Check if the hit's attribute matches the specified value
             if (hit[attributeToRetrieve] === attributeValue) {
-                console.log(`Match found for query "${queryObj.query}"`);
                 // Increment the count for this query
-                queryResults[queryObj.query].count++;
+                queryResults[queryObj.query].count += 1;
             }
         });
 
@@ -361,27 +370,27 @@ function calculateAttributePercentage(jsonData, attributeToRetrieve, attributeVa
 
     console.log("Accumulated Query Results:", queryResults);
 
-    // Array to store calculated percentages for each query
+    // Calculate percentages for each query
     let percentages = [];
     for (const query in queryResults) {
         // Calculate percentage
         let percentage = (queryResults[query].count / queryResults[query].totalHits) * 100;
         
-        // Construct the percentage data object for each query
-        let percentageData = { 
-            query: query,
+        // Add the calculated percentage to the array
+        percentages.push({ 
+            query: query, 
+            // Include the attribute value in the column header
             [`percentage of ${attributeToRetrieve} (${attributeValue})`]: percentage.toFixed(2),
             totalHits: queryResults[query].totalHits
-        };
-        
-        console.log(`Calculated percentage data for query "${query}":`, percentageData);
+        });
 
-        // Add the calculated percentage data to the percentages array
-        percentages.push(percentageData);
+        console.log(`Calculated percentage for query "${query}": ${percentage.toFixed(2)}%`);
     }
 
-    // Log the final array of percentages
+    // Log the final percentages array
     console.log("Final Percentages:", percentages);
     return percentages;
 }
+
+
 
