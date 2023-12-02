@@ -133,12 +133,15 @@ document.addEventListener("DOMContentLoaded", () => {
                 let queryParams = {
                     query: firstQuery,
                     hitsPerPage: numResults,
-                    attributesToRetrieve: [attributeToRetrieve, 'objectID'],
+                    attributesToRetrieve: [attributeToRetrieve, 'objectID'], // Pass the attribute directly
                     getRankingInfo: true, // Include detailed ranking information
                     analytics: false, // Disable analytics for this query
                     clickAnalytics: false, // Disable click analytics
                     userToken: userToken // Add userToken with the generated value
                 };
+
+                console.log("Attribute to retrieve:", attributeToRetrieve);
+                console.log("Query Parameters:", queryParams);
 
                 let response = await fetch(`https://${applicationId}-dsn.algolia.net/1/indexes/${indexName}/query`, {
                     method: 'POST',
@@ -167,11 +170,22 @@ document.addEventListener("DOMContentLoaded", () => {
                         document.getElementById('abTestDetails').innerHTML = abTestDetailsHtml;
                         document.getElementById('abTestDetails').style.display = 'block';
                     }
+                    // Check if the attribute is present in the hits, considering it might be nested
+                    if (data.hits && data.hits.length > 0) {
+                        console.log("First hit received:", data.hits[0]);
+                        let attributeParts = attributeToRetrieve.split('.');
+                        let attributeExists = attributeParts.reduce((obj, part) => obj && obj[part], data.hits[0]);
+
+                        if (attributeExists) {
+                            console.log(`Attribute '${attributeToRetrieve}' was successfully retrieved in the query.`);
+                        } else {
+                            console.log(`Attribute '${attributeToRetrieve}' was not found in the query results.`);
+                        }
+                    }
                 } else {
                     console.error('Failed to fetch A/B Test details for the first query');
                 }
             }
-
 
             // Main loop processing all the queries
             for (let query of queries) {
@@ -181,7 +195,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 let queryParams = {
                     query: query,
                     hitsPerPage: numResults,
-                    attributesToRetrieve: [attributeToRetrieve, 'objectID'],
+                    attributesToRetrieve: [attributeToRetrieve, 'objectID'], // Pass the attribute directly
                     getRankingInfo: true, // Include detailed ranking information
                     analytics: false, // Disable analytics for this query
                     clickAnalytics: false, // Disable click analytics
@@ -205,13 +219,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
 
                 let data = await response.json();
-                console.log("Index Used:", data.indexUsed); // Display the index used
-                console.log("AB Test ID:", data.abTestID); // Display the AB Test ID
-                console.log("AB Test Variant ID:", data.abTestVariantID); // Display the AB Test Variant ID
 
                 // Process hits for each query
                 let queryResults = data.hits.map(hit => ({
-                    [attributeToRetrieve]: hit[attributeToRetrieve],
+                    [attributeToRetrieve]: getNestedAttribute(hit, attributeToRetrieve),
                     objectID: hit.objectID
                 }));
 
@@ -387,29 +398,31 @@ function parseCSV(csvData, numQueries) {
     return queries;
 }
 
+/**
+ * Calculates the percentage of hits that have a specific attribute value for each query.
+ * @param {Array} jsonData - Array of query objects with hits.
+ * @param {String} attributeToRetrieve - The attribute to analyze.
+ * @param {String} attributeValue - The value of the attribute to match.
+ * @returns An array of objects containing the query, its percentage of hits with the specified attribute value, and total hits count.
+ */
+
 function calculateAttributePercentage(jsonData, attributeToRetrieve, attributeValue) {
-    // Logging the start of the calculation process
     console.log("Starting calculation of attribute percentages...");
     console.log("JSON Data:", jsonData);
     console.log("Attribute to Retrieve:", attributeToRetrieve, "Attribute Value:", attributeValue);
 
-    // Object to store the count of matching hits for each query
     let queryResults = {};
 
-    // Loop through each query object in the jsonData
     jsonData.forEach(queryObj => {
         console.log("Processing query:", queryObj.query);
-
-        // Initialize the count for this query
         queryResults[queryObj.query] = queryResults[queryObj.query] || { count: 0, totalHits: queryObj.hits.length };
 
-        // Iterate through each hit in the hits array of the query
         queryObj.hits.forEach(hit => {
-            console.log("Processing hit:", hit);
+            // Convert the attribute value from the hit to string for comparison
+            let hitAttributeValue = String(hit[attributeToRetrieve]);
 
-            // Check if the hit's attribute matches the specified value
-            if (hit[attributeToRetrieve] === attributeValue) {
-                // Increment the count for this query
+            // Compare as strings to handle different data types (e.g., boolean vs string)
+            if (hitAttributeValue === String(attributeValue)) {
                 queryResults[queryObj.query].count += 1;
             }
         });
@@ -419,16 +432,11 @@ function calculateAttributePercentage(jsonData, attributeToRetrieve, attributeVa
 
     console.log("Accumulated Query Results:", queryResults);
 
-    // Calculate percentages for each query
     let percentages = [];
     for (const query in queryResults) {
-        // Calculate percentage
         let percentage = (queryResults[query].count / queryResults[query].totalHits) * 100;
-        
-        // Add the calculated percentage to the array
         percentages.push({ 
             query: query, 
-            // Include the attribute value in the column header
             [`percentage of ${attributeToRetrieve} (${attributeValue})`]: percentage.toFixed(2),
             totalHits: queryResults[query].totalHits
         });
@@ -436,10 +444,21 @@ function calculateAttributePercentage(jsonData, attributeToRetrieve, attributeVa
         console.log(`Calculated percentage for query "${query}": ${percentage.toFixed(2)}%`);
     }
 
-    // Log the final percentages array
     console.log("Final Percentages:", percentages);
     return percentages;
 }
+
+/**
+ * Function to safely extract a nested attribute from an object.
+ * @param {Object} obj - The object from which to extract the attribute.
+ * @param {String} path - The path to the attribute (nested or non-nested).
+ * @returns The value of the attribute at the specified path, or undefined if not found.
+ */
+
+function getNestedAttribute(obj, path) {
+    return path.split('.').reduce((current, part) => current && current[part], obj);
+}
+
 
 
 
