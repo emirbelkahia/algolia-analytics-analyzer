@@ -1,8 +1,33 @@
 document.addEventListener("DOMContentLoaded", () => {
 
+/*
+███████╗██╗   ██╗███████╗███╗   ██╗████████╗    ██╗  ██╗ █████╗ ███╗   ██╗██████╗ ██╗     ███████╗██████╗ ███████╗
+██╔════╝██║   ██║██╔════╝████╗  ██║╚══██╔══╝    ██║  ██║██╔══██╗████╗  ██║██╔══██╗██║     ██╔════╝██╔══██╗██╔════╝
+█████╗  ██║   ██║█████╗  ██╔██╗ ██║   ██║       ███████║███████║██╔██╗ ██║██║  ██║██║     █████╗  ██████╔╝███████╗
+██╔══╝  ╚██╗ ██╔╝██╔══╝  ██║╚██╗██║   ██║       ██╔══██║██╔══██║██║╚██╗██║██║  ██║██║     ██╔══╝  ██╔══██╗╚════██║
+███████╗ ╚████╔╝ ███████╗██║ ╚████║   ██║       ██║  ██║██║  ██║██║ ╚████║██████╔╝███████╗███████╗██║  ██║███████║
+╚══════╝  ╚═══╝  ╚══════╝╚═╝  ╚═══╝   ╚═╝       ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝╚═════╝ ╚══════╝╚══════╝╚═╝  ╚═╝╚══════╝
+*/                                                                                                                
+
+/*
+███████╗███████╗ ██████╗████████╗██╗ ██████╗ ███╗   ██╗     ██╗
+██╔════╝██╔════╝██╔════╝╚══██╔══╝██║██╔═══██╗████╗  ██║    ███║
+███████╗█████╗  ██║        ██║   ██║██║   ██║██╔██╗ ██║    ╚██║
+╚════██║██╔══╝  ██║        ██║   ██║██║   ██║██║╚██╗██║     ██║
+███████║███████╗╚██████╗   ██║   ██║╚██████╔╝██║ ╚████║     ██║
+╚══════╝╚══════╝ ╚═════╝   ╚═╝   ╚═╝ ╚═════╝ ╚═╝  ╚═══╝     ╚═╝
+*/
+
+/**
+ * Event listener for 'form1' submission. It handles Algolia analytics API calls, data fetching, 
+ * conversion to CSV, and displaying a preview of the data. It also provides a download link for the full CSV.
+ */
+
+
     document.getElementById('form1').addEventListener('submit', async (event) => {
         event.preventDefault();
-                
+        
+        // Initializing variables from the form  
         const analyticsApiKey = document.getElementById('analyticsApiKey').value;
         const applicationId = document.getElementById('applicationId').value;
         const indexName = document.getElementById('indexName').value;
@@ -17,8 +42,12 @@ document.addEventListener("DOMContentLoaded", () => {
         if (debugMode) {
             // Skip the API call and directly display Section 2
             document.getElementById('section2').style.display = 'block';
+            document.getElementById('section2').scrollIntoView({ behavior: 'smooth' });
+
         } else {
             console.log("Debug mode is OFF. Proceeding with API call.");
+            // Show the loading message
+            document.getElementById('loadingMessage').style.display = 'block';
             try {
                 const response = await fetch(`https://analytics.algolia.com/2/searches?index=${indexName}&limit=1000`, {
                     headers: {
@@ -56,22 +85,50 @@ document.addEventListener("DOMContentLoaded", () => {
                 // Display preview data - 10 first lines of the CSV file
                 document.getElementById('output1').innerHTML = `<p>Preview of Top 10 Searches:</p>` + createPreviewTable(previewData) + `<p>This is a preview of the first 10 lines. Download the full CSV file for complete data.</p>`;
 
+                // Generate a date-time string for the filename
+                const now = new Date();
+                const dateTimeString = now.toISOString().replace(/T/, '_').replace(/\..+/, '').replace(/:/g, '-');
+
+                // Generate the filename
+                const filename = `top_searches_${dateTimeString}_${applicationId}_${indexName}.csv`;
+
                 // Provide download link for CSV
                 const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8;' });
                 const downloadUrl = window.URL.createObjectURL(blob);
                 const downloadLink = document.createElement('a');
                 downloadLink.href = downloadUrl;
-                downloadLink.download = 'top_searches.csv';
+                downloadLink.download = filename; // Use the dynamic filename
                 downloadLink.textContent = 'Download Full CSV File';
                 document.getElementById('output1').appendChild(downloadLink);
+                
+                // Smoothly scroll to the output section
+                document.getElementById('output1').scrollIntoView({ behavior: 'smooth' });
             } catch (error) {
                 console.error(error);
                 // Handle errors appropriately
+            } finally {
+                // Hide the loading message in both success and error cases
+                document.getElementById('loadingMessage').style.display = 'none';
             }
         }
         // Show Section 2
         document.getElementById('section2').style.display = 'block';
     });
+
+/*
+███████╗███████╗ ██████╗████████╗██╗ ██████╗ ███╗   ██╗    ██████╗ 
+██╔════╝██╔════╝██╔════╝╚══██╔══╝██║██╔═══██╗████╗  ██║    ╚════██╗
+███████╗█████╗  ██║        ██║   ██║██║   ██║██╔██╗ ██║     █████╔╝
+╚════██║██╔══╝  ██║        ██║   ██║██║   ██║██║╚██╗██║    ██╔═══╝ 
+███████║███████╗╚██████╗   ██║   ██║╚██████╔╝██║ ╚████║    ███████╗
+╚══════╝╚══════╝ ╚═════╝   ╚═╝   ╚═╝ ╚═════╝ ╚═╝  ╚═══╝    ╚══════╝
+*/                                                              
+
+/**
+ * Event listener for 'form2' submission. It processes a CSV file to extract search queries,
+ * performs API requests to fetch data based on these queries, and generates a JSON file 
+ * with the results. It also provides a preview and download link for this JSON file.
+ */
 
     document.getElementById('form2').addEventListener('submit', async (event) => {
         event.preventDefault();
@@ -121,6 +178,10 @@ document.addEventListener("DOMContentLoaded", () => {
             let randomToken = Math.random().toString(36).substring(2, 15); // Generate a random string
             let userToken = `analytics-analyzer-${randomToken}`; // Concatenate with the prefix
             console.log("UserToken Generated:", userToken); // Display the generated userToken
+
+            // retrieving Application ID and IndexName from localstorage
+            const applicationId = localStorage.getItem('algoliaApplicationId');
+            const indexName = localStorage.getItem('algoliaIndexName');
 
             // Initialize results array
             let results = [];
@@ -234,12 +295,19 @@ document.addEventListener("DOMContentLoaded", () => {
             const formattedJson = JSON.stringify(results, null, 2);
             console.log("Formatted JSON ready for download:", formattedJson);
 
+            // Generate a date-time string for the filename
+            const now = new Date();
+            const dateTimeString = now.toISOString().replace(/T/, '_').replace(/\..+/, '').replace(/:/g, '-');
+
+            // Format the filename with date-time, application ID, and index name
+            const filename = `search_results_${dateTimeString}_${applicationId}_${indexName}.json`;
+
             // Create a Blob for downloading the JSON file
             const dataBlob = new Blob([formattedJson], { type: 'application/json' });
             const downloadUrl = window.URL.createObjectURL(dataBlob);
             const downloadLink = document.createElement('a');
             downloadLink.href = downloadUrl;
-            downloadLink.download = 'search_results.json';
+            downloadLink.download = filename;
             downloadLink.textContent = 'Download JSON File';
 
             // Create a preview of the JSON file
@@ -254,12 +322,28 @@ document.addEventListener("DOMContentLoaded", () => {
             document.getElementById('output2').style.display = 'block';
             // Show Section 3
             document.getElementById('section3').style.display = 'block';
+            document.getElementById('section3').scrollIntoView({ behavior: 'smooth' });
+
         };
 
         // Read the CSV file as text
         reader.readAsText(csvFile);
     });
 
+/*
+███████╗███████╗ ██████╗████████╗██╗ ██████╗ ███╗   ██╗    ██████╗ 
+██╔════╝██╔════╝██╔════╝╚══██╔══╝██║██╔═══██╗████╗  ██║    ╚════██╗
+███████╗█████╗  ██║        ██║   ██║██║   ██║██╔██╗ ██║     █████╔╝
+╚════██║██╔══╝  ██║        ██║   ██║██║   ██║██║╚██╗██║     ╚═══██╗
+███████║███████╗╚██████╗   ██║   ██║╚██████╔╝██║ ╚████║    ██████╔╝
+╚══════╝╚══════╝ ╚═════╝   ╚═╝   ╚═╝ ╚═════╝ ╚═╝  ╚═══╝    ╚═════╝ 
+*/                                                                 
+
+/**
+ * Event listener for 'form3' submission. It processes an uploaded JSON file to calculate
+ * the percentage of hits with a specific attribute value. It then converts this data to CSV format, 
+ * displays a preview, and provides a download link for the full CSV file.
+ */
 
     document.getElementById('form3').addEventListener('submit', async (event) => {
         event.preventDefault();
@@ -312,15 +396,30 @@ document.addEventListener("DOMContentLoaded", () => {
                 <p>This is a preview of the first 10 lines. The full CSV file can be downloaded below.</p>
             `;
 
+           // Generate a date-time string for the filename
+            const now = new Date();
+            const dateTimeString = now.toISOString().replace(/T/, '_').replace(/\..+/, '').replace(/:/g, '-');
+
+            // Retrieve application ID and index name from local storage
+            const applicationId = localStorage.getItem('algoliaApplicationId');
+            const indexName = localStorage.getItem('algoliaIndexName');
+
+            // Format the filename with date-time, application ID, and index name
+            const filename = `attribute_analysis_${dateTimeString}_${applicationId}_${indexName}.csv`;
+
             // Create a Blob for the full CSV and provide a download link
             const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8;' });
             const downloadUrl = window.URL.createObjectURL(blob);
             const downloadLink = document.createElement('a');
             downloadLink.href = downloadUrl;
-            downloadLink.download = 'attribute_analysis.csv';
+            downloadLink.download = filename;
             downloadLink.textContent = 'Download Full CSV File';
             document.getElementById('output3').appendChild(downloadLink);
+            
+            // Display and smoothly scroll to output3
             document.getElementById('output3').style.display = 'block';
+            document.getElementById('output3').scrollIntoView({ behavior: 'smooth' });
+
         };
 
         // Read the content of the JSON file as text
@@ -328,6 +427,21 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
 });
+
+/*
+███████╗██╗   ██╗███╗   ██╗ ██████╗████████╗██╗ ██████╗ ███╗   ██╗███████╗
+██╔════╝██║   ██║████╗  ██║██╔════╝╚══██╔══╝██║██╔═══██╗████╗  ██║██╔════╝
+█████╗  ██║   ██║██╔██╗ ██║██║        ██║   ██║██║   ██║██╔██╗ ██║███████╗
+██╔══╝  ██║   ██║██║╚██╗██║██║        ██║   ██║██║   ██║██║╚██╗██║╚════██║
+██║     ╚██████╔╝██║ ╚████║╚██████╗   ██║   ██║╚██████╔╝██║ ╚████║███████║
+╚═╝      ╚═════╝ ╚═╝  ╚═══╝ ╚═════╝   ╚═╝   ╚═╝ ╚═════╝ ╚═╝  ╚═══╝╚══════╝
+*/
+
+/**
+ * Converts an array of objects into a CSV format string.
+ * @param {Array} jsonData - Array of objects to be converted to CSV.
+ * @returns {String} A string in CSV format representing the input JSON data.
+ */
 
 function convertToCSV(jsonData) {
     if (!jsonData || !Array.isArray(jsonData) || jsonData.length === 0) {
@@ -357,6 +471,12 @@ function convertToCSV(jsonData) {
     return csvString;
 }
 
+/**
+ * Creates an HTML table as a preview of the first few rows of CSV data.
+ * @param {String} csvData - String in CSV format.
+ * @returns {String} HTML string representing a table constructed from the CSV data.
+ */
+
 // Assuming csvData is a string in CSV format
 function createPreviewTable(csvData) {
     const rows = csvData.split('\n');
@@ -383,6 +503,13 @@ function createPreviewTable(csvData) {
     html += '</tbody></table>';
     return html;
 }
+
+/**
+ * Parses a CSV string and extracts a specified number of queries from it.
+ * @param {String} csvData - String in CSV format to be parsed.
+ * @param {Number} numQueries - Number of queries to extract from the CSV data.
+ * @returns {Array} An array of the first 'numQueries' queries found in the CSV data.
+ */
 
 function parseCSV(csvData, numQueries) {
     const lines = csvData.split('\n').slice(1); // Skip the header row

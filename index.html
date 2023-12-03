@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <title>Algolia Analytics - Analyzer of hits</title>
-    <link rel="stylesheet" href="styles.css"> <!-- Correct path to CSS file -->
-    <script src="script.js" defer></script> <!-- Correct path to JavaScript file -->
+    <link rel="stylesheet" href="styles.css">
+    <script src="script.js" defer></script>
 </head>
 <body>
 
@@ -23,10 +23,10 @@
     <!-- Section 1 -->
     <section id="section1">
         <h2>Section 1: Information Gathering</h2>
-        <p class="section-description">Please enter the following information to generate the CSV file. (Customize this explanation)</p>
+        <p class="section-description">Please enter the following information to generate the CSV file of your top Searches.</p>
         <form id="form1">
             <!-- Input fields for Section 1 -->
-            <label for="applicationId">Algolia APP ID:</label>
+            <label for="applicationId">Algolia Application ID:</label>
             <input type="text" id="applicationId" name="input1" placeholder="ex: 992LFFGOT9">
             <label for="analyticsApiKey">Analytics API Key:</label>
             <input type="text" id="analyticsApiKey" name="input2" placeholder="ex: 9g985748fd51a6388ed321d9319fu8c5">
@@ -34,10 +34,13 @@
             <input type="text" id="indexName" name="input3" placeholder="ex: prod_products_fr_fr">
             <div class="form-group" style="display: flex; align-items: center;">
                 <input type="checkbox" id="debugModeCheckbox" name="debugMode" style="margin-right: 10px;">
-                <label for="debugMode">I already have my csv file containing top searches</label>
+                <label for="debugModeCheckbox">I already have my csv file containing top searches</label>
             </div>
             <button type="submit">Generate my CSV file</button>
         </form>
+        <div id="loadingMessage" style="display: none;">
+            <p>Loading data, please wait...</p>
+        </div>
         <!-- Output table for Section 1 -->
         <div id="output1" style="display: none;">
             <!-- Dynamic content will be added here -->
