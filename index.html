@@ -38,12 +38,13 @@
             <!-- Input fields for Section 1 -->
             <label for="applicationId">Algolia Application ID:</label>
             <input type="text" id="applicationId" name="input1" placeholder="ex: 992LFFGOT9">
+
             <label for="analyticsApiKey">Analytics API Key:</label>
             <input type="text" id="analyticsApiKey" name="input2" placeholder="ex: 9g985748fd51a6388ed321d9319fu8c5">
+
             <label for="indexName">Index Name:</label>
             <input type="text" id="indexName" name="input3" placeholder="ex: prod_products_fr_fr">
-            <label for="rulesContext">Rules Context (optional):</label>
-            <input type="text" id="rulesContext" name="rulesContext" placeholder="ex: mobile">
+
             <div class="form-group" style="display: flex; align-items: center;">
                 <input type="checkbox" id="debugModeCheckbox" name="debugMode" style="margin-right: 10px;">
                 <label for="debugModeCheckbox">I already have my csv file containing top searches</label>
@@ -78,6 +79,9 @@
 
             <label for="numResults">Number of Results per Search:</label>
             <input type="number" id="numResults" name="numResults" min="1" required placeholder="ex: 60, assuming you have 60 results in the first result page">
+
+            <label for="rulesContext">Rules Context (optional):</label>
+            <input type="text" id="rulesContext" name="rulesContext" placeholder="ex: mobile">
 
             <button type="submit">Run Hits Extraction</button>
         </form>
