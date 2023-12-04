@@ -142,6 +142,15 @@ document.addEventListener("DOMContentLoaded", () => {
         const attributeToRetrieve = document.getElementById('attributeToRetrieve').value;
         const numResults = document.getElementById('numResults').value;
         const csvFile = document.getElementById('csvFile').files[0];
+        // Extract rulesContext value from the form
+        const rulesContextValue = document.getElementById('rulesContext').value;
+        let rulesContexts = [];
+        if (rulesContextValue) {
+            rulesContexts = rulesContextValue.split(',').map(item => item.trim()); // Split by comma and trim spaces
+            console.log("Captured rulesContexts:", rulesContexts); // Logging captured rulesContexts
+        } else {
+            console.log("No rulesContext provided.");
+        }
 
         // Store attributeToRetrieve in local storage for use in later steps
         localStorage.setItem('attributeToRetrieve', attributeToRetrieve);
@@ -262,6 +271,14 @@ document.addEventListener("DOMContentLoaded", () => {
                     clickAnalytics: false, // Disable click analytics
                     userToken: userToken // Add userToken with the generated value
                 };
+
+                // Include rulesContexts in queryParams if provided
+                if (rulesContexts.length > 0) {
+                    queryParams['ruleContexts'] = rulesContexts;
+                    console.log("Appending ruleContexts to queryParams for query:", query, queryParams); // Logging modified queryParams
+                } else {
+                    console.log("No ruleContexts appended for query:", query);
+                }
 
                 let response = await fetch(`https://${applicationId}-dsn.algolia.net/1/indexes/${indexName}/query`, {
                     method: 'POST',
