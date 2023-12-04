@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title>Algolia Analytics - Analyzer of hits</title>
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <script src="script.js" defer></script>
 </head>
 <body>
@@ -11,6 +12,11 @@
     <!-- Tool Introduction Header -->
     <header class="tool-introduction">
         <h1 class="header-title">Algolia Analytics - Analyzer of Hits v1.0</h1>
+        <p class="disclaimer">
+            Note: This tool was independently developed by Emir Belkahia, Customer Success Manager at Algolia in Dec 2023. It is not an official Algolia product and is not maintained by Algolia. For questions or improvement suggestions, please contact me on LinkedIn: 
+            <a href="https://www.linkedin.com/in/emirbelkahia/" target="_blank">
+                <i class="fab fa-linkedin"></i> my LinkedIn profile</a>.
+        </p>
         <p class="header-goal">Goal: Find out what percentage of results of a given kind you have on page 1</p>
         <div class="use-cases">
             <p>Example of use case:</p>
@@ -51,9 +57,7 @@
             </div>
             <button type="submit">Generate my CSV file</button>
         </form>
-        <div id="loadingMessage" style="display: none;">
-            <p>Loading data, please wait...</p>
-        </div>
+        <div id="loadingMessage" style="display: none;">Please wait... <span class="loader"></span></div>
         <!-- Output table for Section 1 -->
         <div id="output1" style="display: none;">
             <!-- Dynamic content will be added here -->
@@ -85,6 +89,7 @@
 
             <button type="submit">Run Hits Extraction</button>
         </form>
+        <div id="loadingMessage" style="display: none;">Please wait... <span class="loader"></span></div>
         <div id="abTestDetails" style="display: none;"></div>
         <div id="output2" style="display: none;">
             <!-- JSON download link will be added here -->

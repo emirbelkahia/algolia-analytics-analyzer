@@ -48,6 +48,19 @@
     color: #28a745; /* Keep this color for visibility */
 }
 
+.disclaimer {
+    font-size: 14px; /* Smaller font size for the disclaimer */
+    color: #666; /* Grey color for a subtle look */
+    margin-bottom: 15px; /* Space below the disclaimer */
+    text-align: center; /* Center align for emphasis */
+}
+
+.disclaimer .fa-linkedin {
+    font-size: 1em; /* Adjust the size of the icon */
+    margin-right: 4px; /* Space between the icon and the text */
+    vertical-align: middle; /* Align icon with the text */
+}
+
 /* General Styles */
 body {
     font-family: 'Arial', sans-serif;
@@ -183,3 +196,19 @@ tr:hover {
 label[for="debugModeCheckbox"] {
     cursor: pointer;
 }
+
+/* Loader */
+.loader {
+    border: 5px solid #f3f3f3; /* Light grey */
+    border-top: 5px solid #3498db; /* Blue */
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+

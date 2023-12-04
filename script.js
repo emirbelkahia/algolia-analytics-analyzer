@@ -129,11 +129,13 @@ document.addEventListener("DOMContentLoaded", () => {
  * performs API requests to fetch data based on these queries, and generates a JSON file 
  * with the results. It also provides a preview and download link for this JSON file.
  */
+document.getElementById('form2').addEventListener('submit', async (event) => {
+    event.preventDefault();
 
-    document.getElementById('form2').addEventListener('submit', async (event) => {
-        event.preventDefault();
+    // Show the loading message
+    document.getElementById('loadingMessage').style.display = 'block';
 
-        // Log to indicate the start of form processing
+    try {
         console.log("Processing form for Section 2...");
 
         // Initialize variables from form input
@@ -142,12 +144,13 @@ document.addEventListener("DOMContentLoaded", () => {
         const attributeToRetrieve = document.getElementById('attributeToRetrieve').value;
         const numResults = document.getElementById('numResults').value;
         const csvFile = document.getElementById('csvFile').files[0];
+        
         // Extract rulesContext value from the form
         const rulesContextValue = document.getElementById('rulesContext').value;
         let rulesContexts = [];
         if (rulesContextValue) {
-            rulesContexts = rulesContextValue.split(',').map(item => item.trim()); // Split by comma and trim spaces
-            console.log("Captured rulesContexts:", rulesContexts); // Logging captured rulesContexts
+            rulesContexts = rulesContextValue.split(',').map(item => item.trim());
+            console.log("Captured rulesContexts:", rulesContexts);
         } else {
             console.log("No rulesContext provided.");
         }
@@ -184,78 +187,12 @@ document.addEventListener("DOMContentLoaded", () => {
             console.log("Extracted queries:", queries);
 
             // Generate a random token for userToken
-            let randomToken = Math.random().toString(36).substring(2, 15); // Generate a random string
-            let userToken = `analytics-analyzer-${randomToken}`; // Concatenate with the prefix
-            console.log("UserToken Generated:", userToken); // Display the generated userToken
-
-            // retrieving Application ID and IndexName from localstorage
-            const applicationId = localStorage.getItem('algoliaApplicationId');
-            const indexName = localStorage.getItem('algoliaIndexName');
+            let randomToken = Math.random().toString(36).substring(2, 15);
+            let userToken = `analytics-analyzer-${randomToken}`;
+            console.log("UserToken Generated:", userToken);
 
             // Initialize results array
             let results = [];
-
-            // Check for A/B Test details using the first query
-            if (queries.length > 0) {
-                let firstQuery = queries[0];
-                console.log("Fetching A/B test details with query:", firstQuery);
-                // Set up API request parameters
-                let queryParams = {
-                    query: firstQuery,
-                    hitsPerPage: numResults,
-                    attributesToRetrieve: [attributeToRetrieve, 'objectID'], // Pass the attribute directly
-                    getRankingInfo: true, // Include detailed ranking information
-                    analytics: false, // Disable analytics for this query
-                    clickAnalytics: false, // Disable click analytics
-                    userToken: userToken // Add userToken with the generated value
-                };
-
-                console.log("Attribute to retrieve:", attributeToRetrieve);
-                console.log("Query Parameters:", queryParams);
-
-                let response = await fetch(`https://${applicationId}-dsn.algolia.net/1/indexes/${indexName}/query`, {
-                    method: 'POST',
-                    headers: {
-                        'X-Algolia-API-Key': searchApiKey,
-                        'X-Algolia-Application-Id': applicationId,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(queryParams) // Send queryParams as the request body
-                });
-
-                if (response.ok) {
-                    let data = await response.json();
-                    console.log("Received data:", data);
-                    if (data.abTestID) {
-                        console.log("A/B Test ID found:", data.abTestID);
-                        let abTestDetailsHtml = `
-                            <div class="ab-test-warning">
-                                <p><strong>Important Note: An A/B test is running on the index on which this analysis was run.</strong></p>
-                                <p>By design, it's not possible to control in which variant you fall in. If the below variant is not the one you expected, try clicking again on the "Run Analysis" button to try to fall in the other variant.</p>
-                                <p>Index Used: ${data.indexUsed}</p>
-                                <p>A/B Test ID: ${data.abTestID}</p>
-                                <p>AB Test Variant ID: ${data.abTestVariantID}</p>
-                            </div>
-                        `;
-                        document.getElementById('abTestDetails').innerHTML = abTestDetailsHtml;
-                        document.getElementById('abTestDetails').style.display = 'block';
-                    }
-                    // Check if the attribute is present in the hits, considering it might be nested
-                    if (data.hits && data.hits.length > 0) {
-                        console.log("First hit received:", data.hits[0]);
-                        let attributeParts = attributeToRetrieve.split('.');
-                        let attributeExists = attributeParts.reduce((obj, part) => obj && obj[part], data.hits[0]);
-
-                        if (attributeExists) {
-                            console.log(`Attribute '${attributeToRetrieve}' was successfully retrieved in the query.`);
-                        } else {
-                            console.log(`Attribute '${attributeToRetrieve}' was not found in the query results.`);
-                        }
-                    }
-                } else {
-                    console.error('Failed to fetch A/B Test details for the first query');
-                }
-            }
 
             // Main loop processing all the queries
             for (let query of queries) {
@@ -265,19 +202,16 @@ document.addEventListener("DOMContentLoaded", () => {
                 let queryParams = {
                     query: query,
                     hitsPerPage: numResults,
-                    attributesToRetrieve: [attributeToRetrieve, 'objectID'], // Pass the attribute directly
-                    getRankingInfo: true, // Include detailed ranking information
-                    analytics: false, // Disable analytics for this query
-                    clickAnalytics: false, // Disable click analytics
-                    userToken: userToken // Add userToken with the generated value
+                    attributesToRetrieve: [attributeToRetrieve, 'objectID'],
+                    getRankingInfo: true,
+                    analytics: false,
+                    clickAnalytics: false,
+                    userToken: userToken
                 };
 
                 // Include rulesContexts in queryParams if provided
                 if (rulesContexts.length > 0) {
                     queryParams['ruleContexts'] = rulesContexts;
-                    console.log("Appending ruleContexts to queryParams for query:", query, queryParams); // Logging modified queryParams
-                } else {
-                    console.log("No ruleContexts appended for query:", query);
                 }
 
                 let response = await fetch(`https://${applicationId}-dsn.algolia.net/1/indexes/${indexName}/query`, {
@@ -287,10 +221,9 @@ document.addEventListener("DOMContentLoaded", () => {
                         'X-Algolia-Application-Id': applicationId,
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify(queryParams) // Send queryParams as the request body
+                    body: JSON.stringify(queryParams)
                 });
 
-                // Check API response status
                 if (!response.ok) {
                     console.error('Search API request failed for query:', query);
                     continue;
@@ -340,12 +273,19 @@ document.addEventListener("DOMContentLoaded", () => {
             // Show Section 3
             document.getElementById('section3').style.display = 'block';
             document.getElementById('section3').scrollIntoView({ behavior: 'smooth' });
-
         };
 
         // Read the CSV file as text
         reader.readAsText(csvFile);
-    });
+    } catch (error) {
+        console.error("An error occurred:", error);
+        // Handle any errors that occurred during processing
+    } finally {
+        // Hide the loading message whether processing was successful or not
+        document.getElementById('loadingMessage').style.display = 'none';
+    }
+});
+
 
 /*
 ███████╗███████╗ ██████╗████████╗██╗ ██████╗ ███╗   ██╗    ██████╗ 
