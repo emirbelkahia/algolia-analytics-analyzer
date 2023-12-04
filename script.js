@@ -47,7 +47,7 @@ document.addEventListener("DOMContentLoaded", () => {
         } else {
             console.log("Debug mode is OFF. Proceeding with API call.");
             // Show the loading message
-            document.getElementById('loadingMessage').style.display = 'block';
+            document.getElementById('loadingMessage1').style.display = 'block';
             try {
                 const response = await fetch(`https://analytics.algolia.com/2/searches?index=${indexName}&limit=1000`, {
                     headers: {
@@ -108,7 +108,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 // Handle errors appropriately
             } finally {
                 // Hide the loading message in both success and error cases
-                document.getElementById('loadingMessage').style.display = 'none';
+                document.getElementById('loadingMessage1').style.display = 'none';
             }
         }
         // Show Section 2
@@ -133,7 +133,8 @@ document.getElementById('form2').addEventListener('submit', async (event) => {
     event.preventDefault();
 
     // Show the loading message
-    document.getElementById('loadingMessage').style.display = 'block';
+    document.getElementById('loadingMessage2').style.display = 'block';
+    console.log("Loading message should be visible now");
 
     try {
         console.log("Processing form for Section 2...");
@@ -193,6 +194,53 @@ document.getElementById('form2').addEventListener('submit', async (event) => {
 
             // Initialize results array
             let results = [];
+
+            // Check for A/B Test details using the first query
+            if (queries.length > 0) {
+                let firstQuery = queries[0];
+                console.log("Fetching A/B test details with query:", firstQuery);
+                // Set up API request parameters
+                let queryParams = {
+                    query: firstQuery,
+                    hitsPerPage: numResults,
+                    attributesToRetrieve: [attributeToRetrieve, 'objectID'],
+                    getRankingInfo: true, // Include detailed ranking information
+                    analytics: false, // Disable analytics for this query
+                    clickAnalytics: false, // Disable click analytics
+                    userToken: userToken // Add userToken with the generated value
+                };
+
+                let response = await fetch(`https://${applicationId}-dsn.algolia.net/1/indexes/${indexName}/query`, {
+                    method: 'POST',
+                    headers: {
+                        'X-Algolia-API-Key': searchApiKey,
+                        'X-Algolia-Application-Id': applicationId,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(queryParams) // Send queryParams as the request body
+                });
+
+                if (response.ok) {
+                    let data = await response.json();
+                    console.log("Received data:", data);
+                    if (data.abTestID) {
+                        console.log("A/B Test ID found:", data.abTestID);
+                        let abTestDetailsHtml = `
+                            <div class="ab-test-warning">
+                                <p><strong>Important Note: An A/B test is running on the index on which this analysis was run.</strong></p>
+                                <p>By design, it's not possible to control in which variant you fall in. If the below variant is not the one you expected, try clicking again on the "Run Analysis" button to try to fall in the other variant.</p>
+                                <p>Index Used: ${data.indexUsed}</p>
+                                <p>A/B Test ID: ${data.abTestID}</p>
+                                <p>AB Test Variant ID: ${data.abTestVariantID}</p>
+                            </div>
+                        `;
+                        document.getElementById('abTestDetails').innerHTML = abTestDetailsHtml;
+                        document.getElementById('abTestDetails').style.display = 'block';
+                    }
+                } else {
+                    console.error('Failed to fetch A/B Test details for the first query');
+                }
+            }
 
             // Main loop processing all the queries
             for (let query of queries) {
@@ -273,6 +321,7 @@ document.getElementById('form2').addEventListener('submit', async (event) => {
             // Show Section 3
             document.getElementById('section3').style.display = 'block';
             document.getElementById('section3').scrollIntoView({ behavior: 'smooth' });
+            document.getElementById('loadingMessage2').style.display = 'none';
         };
 
         // Read the CSV file as text
@@ -282,7 +331,7 @@ document.getElementById('form2').addEventListener('submit', async (event) => {
         // Handle any errors that occurred during processing
     } finally {
         // Hide the loading message whether processing was successful or not
-        document.getElementById('loadingMessage').style.display = 'none';
+        
     }
 });
 
