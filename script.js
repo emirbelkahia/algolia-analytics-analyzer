@@ -544,11 +544,11 @@ function calculateAttributePercentage(jsonData, attributeToRetrieve, attributeVa
     console.log("JSON Data:", jsonData);
     console.log("Attribute to Retrieve:", attributeToRetrieve, "Attribute Value:", attributeValue);
 
-    let queryResults = {};
+    let percentages = [];
 
     jsonData.forEach(queryObj => {
         console.log("Processing query:", queryObj.query);
-        queryResults[queryObj.query] = queryResults[queryObj.query] || { count: 0, totalHits: queryObj.hits.length };
+        let count = 0;
 
         queryObj.hits.forEach(hit => {
             // Convert the attribute value from the hit to string for comparison
@@ -556,26 +556,19 @@ function calculateAttributePercentage(jsonData, attributeToRetrieve, attributeVa
 
             // Compare as strings to handle different data types (e.g., boolean vs string)
             if (hitAttributeValue === String(attributeValue)) {
-                queryResults[queryObj.query].count += 1;
+                count += 1;
             }
         });
 
-        console.log(`Processed results for query "${queryObj.query}":`, queryResults[queryObj.query]);
-    });
-
-    console.log("Accumulated Query Results:", queryResults);
-
-    let percentages = [];
-    for (const query in queryResults) {
-        let percentage = (queryResults[query].count / queryResults[query].totalHits) * 100;
+        let percentage = (count / queryObj.hits.length) * 100;
         percentages.push({ 
-            query: query, 
+            query: queryObj.query, 
             [`percentage of ${attributeToRetrieve} (${attributeValue})`]: percentage.toFixed(2),
-            totalHits: queryResults[query].totalHits
+            totalHits: queryObj.hits.length
         });
 
-        console.log(`Calculated percentage for query "${query}": ${percentage.toFixed(2)}%`);
-    }
+        console.log(`Processed results for query "${queryObj.query}": Percentage - ${percentage.toFixed(2)}%, Total Hits - ${queryObj.hits.length}`);
+    });
 
     console.log("Final Percentages:", percentages);
     return percentages;
