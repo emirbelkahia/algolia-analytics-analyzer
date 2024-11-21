@@ -192,9 +192,9 @@ document.head.appendChild(style);
 */                                                              
 
 /**
- * Event listener for 'form2' submission. It processes a CSV file to extract search queries,
- * performs API requests to fetch data based on these queries, and generates a JSON file 
- * with the results. It also provides a preview and download link for this JSON file.
+ * Event listener for 'form2' submission. It processes a CSV file to extract search queries
+ * from the column with the header "search", performs API requests based on these queries,
+ * and generates a JSON file with the results. It also provides a preview and download link for this JSON file.
  */
 document.getElementById('form2').addEventListener('submit', async (event) => {
     event.preventDefault();
@@ -250,8 +250,8 @@ document.getElementById('form2').addEventListener('submit', async (event) => {
             const csvData = e.target.result;
             console.log("CSV file loaded, starting to parse queries...");
 
-            // Parse CSV data to extract queries
-            const queries = parseCSV(csvData, numSearchesToProcess);
+            // Parse CSV data to extract queries from the "search" column
+            const queries = parseCSV(csvData, "search", numSearchesToProcess);
             console.log("Extracted queries:", queries);
 
             // Generate a random token for userToken
@@ -261,53 +261,6 @@ document.getElementById('form2').addEventListener('submit', async (event) => {
 
             // Initialize results array
             let results = [];
-
-            // Check for A/B Test details using the first query
-            if (queries.length > 0) {
-                let firstQuery = queries[0];
-                console.log("Fetching A/B test details with query:", firstQuery);
-                // Set up API request parameters
-                let queryParams = {
-                    query: firstQuery,
-                    hitsPerPage: numResults,
-                    attributesToRetrieve: [attributeToRetrieve, 'objectID'],
-                    getRankingInfo: true, // Include detailed ranking information
-                    analytics: false, // Disable analytics for this query
-                    clickAnalytics: false, // Disable click analytics
-                    userToken: userToken // Add userToken with the generated value
-                };
-
-                let response = await fetch(`https://${applicationId}-dsn.algolia.net/1/indexes/${indexName}/query`, {
-                    method: 'POST',
-                    headers: {
-                        'X-Algolia-API-Key': searchApiKey,
-                        'X-Algolia-Application-Id': applicationId,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(queryParams) // Send queryParams as the request body
-                });
-
-                if (response.ok) {
-                    let data = await response.json();
-                    console.log("Received data:", data);
-                    if (data.abTestID) {
-                        console.log("A/B Test ID found:", data.abTestID);
-                        let abTestDetailsHtml = `
-                            <div class="ab-test-warning">
-                                <p><strong>Important Note: An A/B test is running on the index on which this analysis was run.</strong></p>
-                                <p>By design, it's not possible to control in which variant you fall in. If the below variant is not the one you expected, try clicking again on the "Run Analysis" button to try to fall in the other variant.</p>
-                                <p>Index Used: ${data.indexUsed}</p>
-                                <p>A/B Test ID: ${data.abTestID}</p>
-                                <p>AB Test Variant ID: ${data.abTestVariantID}</p>
-                            </div>
-                        `;
-                        document.getElementById('abTestDetails').innerHTML = abTestDetailsHtml;
-                        document.getElementById('abTestDetails').style.display = 'block';
-                    }
-                } else {
-                    console.error('Failed to fetch A/B Test details for the first query');
-                }
-            }
 
             // Main loop processing all the queries
             for (let query of queries) {
@@ -398,9 +351,48 @@ document.getElementById('form2').addEventListener('submit', async (event) => {
         // Handle any errors that occurred during processing
     } finally {
         // Hide the loading message whether processing was successful or not
-        
+        document.getElementById('loadingMessage2').style.display = 'none';
     }
 });
+
+/**
+ * Parses a CSV file and extracts data from the column with the specified header.
+ * @param {string} csvData - The raw CSV data as a string.
+ * @param {string} targetHeader - The header of the column to extract.
+ * @param {number} maxRows - The maximum number of rows to process.
+ * @returns {Array} - An array of extracted data from the target column.
+ */
+function parseCSV(csvData, targetHeader, maxRows) {
+    const lines = csvData.split('\n');
+    const headers = lines[0].split(',');
+
+    // Find the index of the target header
+    const targetIndex = headers.indexOf(targetHeader);
+    if (targetIndex === -1) {
+        console.error(`Column "${targetHeader}" not found in the CSV headers.`);
+        return [];
+    }
+
+    // Extract data from the target column
+    const queries = [];
+    for (let i = 1; i < Math.min(lines.length, maxRows + 1); i++) {
+        const cells = lines[i].split(',');
+        if (cells[targetIndex]) {
+            queries.push(cells[targetIndex].trim());
+        }
+    }
+    return queries;
+}
+
+/**
+ * Retrieves a nested attribute value from an object.
+ * @param {Object} obj - The object to retrieve the attribute from.
+ * @param {string} path - The dot-separated path to the attribute.
+ * @returns {*} - The value of the attribute, or null if not found.
+ */
+function getNestedAttribute(obj, path) {
+    return path.split('.').reduce((acc, key) => acc && acc[key] !== undefined ? acc[key] : null, obj);
+}
 
 
 /*
