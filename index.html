@@ -37,6 +37,13 @@
         .tooltip:hover .tooltiptext {
             visibility: visible;
         }
+
+        .form-instructions {
+        font-size: 0.9em;
+        color: #555;
+        margin-top: -10px;
+        margin-bottom: 20px;
+        }
     </style>
     <!-- Your existing script.js file -->
     <script src="script.js" defer></script>
@@ -47,7 +54,7 @@
     <header class="tool-introduction">
         <h1 class="header-title">Algolia Analytics - Analyzer of Hits v1.0</h1>
         <p class="disclaimer">
-            Note: This tool was independently developed by Emir Belkahia, Customer Success Manager at Algolia in Dec 2023. It is not an official Algolia product and is not maintained by Algolia. For questions or improvement suggestions, please contact me on LinkedIn: 
+            Note: This tool was independently developed by Emir Belkahia, Senior Customer Success Manager at Algolia, in Dec 2023 and updated in Jan 2024. It is not an official Algolia product and is not maintained by Algolia. For questions or improvement suggestions, please contact me on LinkedIn: 
             <a href="https://www.linkedin.com/in/emirbelkahia/" target="_blank">
                 <i class="fab fa-linkedin"></i> my LinkedIn profile</a>.
         </p>
@@ -85,12 +92,20 @@
             <label for="indexName">Index Name:</label>
             <input type="text" id="indexName" name="input3" placeholder="ex: prod_products_fr_fr">
     
-            <!-- Nouveaux champs de date (Optionnels) : -->
+            <!-- Start Date Field (Optional) -->
             <label for="startDate">Start Date (optional):</label>
             <input type="date" id="startDate" name="startDate" placeholder="YYYY-MM-DD">
-    
+            <p class="form-instructions">
+                If you leave this field empty, the tool will retrieve data for the most popular searches from the last 7 days.
+            </p>
+            
+            <!-- End Date Field (Optional) -->
             <label for="endDate">End Date (optional):</label>
             <input type="date" id="endDate" name="endDate" placeholder="YYYY-MM-DD">
+            <p class="form-instructions">
+                Make sure your selected date range doesn’t exceed the retention period for your Analytics data. Most customers have 90 or 365 days.
+                If you’re unsure, start with 90 days. If the file is identical when testing with 100 days, your retention is likely 90 days. If it’s different, your retention is probably 365 days.
+            </p>
     
             <!-- Case à cocher Debug -->
             <div class="form-group" style="display: flex; align-items: center;">
