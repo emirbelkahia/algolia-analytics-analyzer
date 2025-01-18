@@ -5,7 +5,7 @@
 ██╔══╝  ╚██╗ ██╔╝██╔══╝  ██║╚██╗██║   ██║       ██╔══██║██╔══██║██║╚██╗██║██║  ██║██║     ██╔══╝  ██╔══██╗╚════██║
 ███████╗ ╚████╔╝ ███████╗██║ ╚████║   ██║       ██║  ██║██║  ██║██║ ╚████║██████╔╝███████╗███████╗██║  ██║███████║
 ╚══════╝  ╚═══╝  ╚══════╝╚═╝  ╚═══╝   ╚═╝       ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝╚═════╝ ╚══════╝╚══════╝╚═╝  ╚═╝╚══════╝
-*/                                                                                                                
+*/
 
 /*
 ███████╗███████╗ ██████╗████████╗██╗ ██████╗ ███╗   ██╗     ██╗
@@ -17,12 +17,11 @@
 */
 
 /**
- * Event listener for 'form1' submission. It handles Algolia analytics API calls, data fetching, 
- * conversion to CSV, and displaying a preview of the data. It also provides a download link for the full CSV.
+ * Event listener for 'form1' submission. Handles Algolia analytics API calls, data fetching,
+ * conversion to CSV, and displaying a preview of the data. Also provides a download link for the full CSV.
  */
 
 document.addEventListener("DOMContentLoaded", () => {
-
     const style = document.createElement('style');
     style.innerHTML = `
     .tooltip {
@@ -32,7 +31,7 @@ document.addEventListener("DOMContentLoaded", () => {
         color: blue;
         text-decoration: underline;
     }
-    
+
     .tooltip .tooltiptext {
         visibility: hidden;
         width: 220px;
@@ -42,7 +41,6 @@ document.addEventListener("DOMContentLoaded", () => {
         text-align: center;
         padding: 5px;
         border-radius: 6px;
-        /* Position the tooltip */
         position: absolute;
         z-index: 1;
         bottom: 125%;
@@ -50,7 +48,7 @@ document.addEventListener("DOMContentLoaded", () => {
         margin-left: -110px;
         box-shadow: 0px 0px 6px #aaa;
     }
-    
+
     .tooltip:hover .tooltiptext {
         visibility: visible;
     }
@@ -65,8 +63,8 @@ document.addEventListener("DOMContentLoaded", () => {
         const indexName = document.getElementById('indexName').value;
         const debugMode = document.getElementById('debugModeCheckbox').checked;
 
-        const startDateValue = document.getElementById('startDate').value; // '' if empty
-        const endDateValue = document.getElementById('endDate').value;   // '' if empty
+        const startDateValue = document.getElementById('startDate').value;
+        const endDateValue = document.getElementById('endDate').value;
 
         console.log("Start Date:", startDateValue || "Not provided");
         console.log("End Date:", endDateValue || "Not provided");
@@ -107,7 +105,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                     if (searchData?.searches?.length > 0) {
                         console.log(`Data retrieved from endpoint: ${endpoint}`);
-                        break; // Exit loop on successful response
+                        break; // Stop after successful fetch
                     }
                 }
 
