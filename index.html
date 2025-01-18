@@ -75,20 +75,29 @@
         <h2>Section 1: Information Gathering</h2>
         <p class="section-description">Please enter the following information to generate the CSV file of your top Searches.</p>
         <form id="form1">
-            <!-- Input fields for Section 1 -->
+            <!-- Champs déjà existants -->
             <label for="applicationId">Algolia Application ID:</label>
             <input type="text" id="applicationId" name="input1" placeholder="ex: 992LFFGOT9">
-
+    
             <label for="analyticsApiKey">Analytics API Key:</label>
             <input type="text" id="analyticsApiKey" name="input2" placeholder="ex: 9g985748fd51a6388ed321d9319fu8c5">
-
+    
             <label for="indexName">Index Name:</label>
             <input type="text" id="indexName" name="input3" placeholder="ex: prod_products_fr_fr">
-
+    
+            <!-- Nouveaux champs de date (Optionnels) : -->
+            <label for="startDate">Start Date (optional):</label>
+            <input type="date" id="startDate" name="startDate" placeholder="YYYY-MM-DD">
+    
+            <label for="endDate">End Date (optional):</label>
+            <input type="date" id="endDate" name="endDate" placeholder="YYYY-MM-DD">
+    
+            <!-- Case à cocher Debug -->
             <div class="form-group" style="display: flex; align-items: center;">
                 <input type="checkbox" id="debugModeCheckbox" name="debugMode" style="margin-right: 10px;">
                 <label for="debugModeCheckbox">I already have my csv file containing top searches</label>
             </div>
+    
             <button type="submit">Generate my CSV file</button>
         </form>
         <div id="loadingMessage1" class="loader" style="display: none;">Processing, Please wait...</div>
