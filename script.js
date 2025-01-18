@@ -57,51 +57,40 @@ document.addEventListener("DOMContentLoaded", () => {
     `;
     document.head.appendChild(style);
 
-    // =====================================
-    // SECTION 1 FORM SUBMIT LOGIC
-    // =====================================
     document.getElementById('form1').addEventListener('submit', async (event) => {
         event.preventDefault();
 
-        // Initializing variables from the form
         const analyticsApiKey = document.getElementById('analyticsApiKey').value;
         const applicationId = document.getElementById('applicationId').value;
         const indexName = document.getElementById('indexName').value;
         const debugMode = document.getElementById('debugModeCheckbox').checked;
 
-        // Retrieve optional date fields
         const startDateValue = document.getElementById('startDate').value; // '' if empty
         const endDateValue = document.getElementById('endDate').value;   // '' if empty
 
-        // Store the application ID and index name for later use
-        localStorage.setItem('algoliaApplicationId', applicationId);
-        localStorage.setItem('algoliaIndexName', indexName);
+        console.log("Start Date:", startDateValue || "Not provided");
+        console.log("End Date:", endDateValue || "Not provided");
 
-        // Check the state of the debug mode checkbox
         if (debugMode) {
             document.getElementById('section2').style.display = 'block';
             document.getElementById('section2').scrollIntoView({ behavior: 'smooth' });
-            return; // Skip the API call in debug mode
+            return;
         }
 
-        console.log("Debug mode is OFF. Proceeding with API call.");
+        let queryString = `index=${indexName}&limit=1000`;
+        if (startDateValue) queryString += `&startDate=${startDateValue}`;
+        if (endDateValue) queryString += `&endDate=${endDateValue}`;
+
+        console.log("Final Query String:", queryString);
+
         document.getElementById('loadingMessage1').style.display = 'block';
 
         try {
-            // Build the query string based on optional date fields
-            let queryString = `index=${indexName}&limit=1000`;
-            if (startDateValue) queryString += `&startDate=${startDateValue}`;
-            if (endDateValue) queryString += `&endDate=${endDateValue}`;
-
-            console.log("Query String:", queryString);
-
-            // Fetch data from the Analytics API
             const endpoints = [
                 'https://analytics.algolia.com',
                 'https://analytics.de.algolia.com'
             ];
 
-            // Try each endpoint and break on the first valid response
             let searchData = null;
 
             for (let endpoint of endpoints) {
@@ -125,9 +114,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 console.error(`API request failed or no data at endpoint: ${endpoint}`);
             }
 
-            // Handle case where no valid data was retrieved
             if (!searchData || !searchData.searches || searchData.searches.length === 0) {
-                console.log("Analytics are empty or could not be retrieved.");
                 document.getElementById('output1').style.display = 'block';
                 document.getElementById('output1').innerHTML = `
                     <p>Analytics are empty or could not be retrieved. Alternatively, you can download the CSV directly from the Algolia dashboard.</p>
@@ -144,8 +131,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 return;
             }
 
-            // Process and display the data
-            console.log("API Response:", searchData);
             const csvData = convertToCSV(searchData.searches);
             const previewData = csvData.split('\n').slice(0, 11).join('\n');
 
@@ -156,7 +141,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 <p>This is a preview of the first 10 lines. Download the full CSV file for complete data.</p>
             `;
 
-            // Generate the filename and provide a download link
             const now = new Date();
             const dateTimeString = now.toISOString().replace(/T/, '_').replace(/\..+/, '').replace(/:/g, '-');
             const filename = `top_searches_${dateTimeString}_${applicationId}_${indexName}.csv`;
@@ -170,8 +154,6 @@ document.addEventListener("DOMContentLoaded", () => {
             document.getElementById('output1').appendChild(downloadLink);
 
             document.getElementById('output1').scrollIntoView({ behavior: 'smooth' });
-
-            // Show Section 2
             document.getElementById('section2').style.display = 'block';
             document.getElementById('section2').scrollIntoView({ behavior: 'smooth' });
         } catch (error) {
