@@ -54,27 +54,24 @@ document.addEventListener("DOMContentLoaded", () => {
     .tooltip:hover .tooltiptext {
         visibility: visible;
     }
-
-    /* Ajouter d’autres styles si tu en avais précédemment */
     `;
     document.head.appendChild(style);
-
 
     // =====================================
     // SECTION 1 FORM SUBMIT LOGIC
     // =====================================
     document.getElementById('form1').addEventListener('submit', async (event) => {
         event.preventDefault();
-        
+
         // Initializing variables from the form
         const analyticsApiKey = document.getElementById('analyticsApiKey').value;
-        const applicationId   = document.getElementById('applicationId').value;
-        const indexName       = document.getElementById('indexName').value;
-        const debugMode       = document.getElementById('debugModeCheckbox').checked;
+        const applicationId = document.getElementById('applicationId').value;
+        const indexName = document.getElementById('indexName').value;
+        const debugMode = document.getElementById('debugModeCheckbox').checked;
 
         // Retrieve optional date fields
         const startDateValue = document.getElementById('startDate').value; // '' if empty
-        const endDateValue   = document.getElementById('endDate').value;   // '' if empty
+        const endDateValue = document.getElementById('endDate').value;   // '' if empty
 
         // Store the application ID and index name for later use
         localStorage.setItem('algoliaApplicationId', applicationId);
@@ -82,134 +79,111 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // Check the state of the debug mode checkbox
         if (debugMode) {
-            // Skip the API call and directly display Section 2
             document.getElementById('section2').style.display = 'block';
             document.getElementById('section2').scrollIntoView({ behavior: 'smooth' });
-
-        } else {
-            console.log("Debug mode is OFF. Proceeding with API call.");
-            // Show the loading message
-            document.getElementById('loadingMessage1').style.display = 'block';
-
-            try {
-                let searchData = null;
-                let response   = null;
-
-                // Build the query string based on optional date fields
-                // By default: ?index=INDEX_NAME&limit=1000
-                let queryString = `index=${indexName}&limit=1000`;
-
-                // If a startDate is provided, add &startDate=YYYY-MM-DD
-                if (startDateValue) {
-                    queryString += `&startDate=${startDateValue}`;
-                }
-                // If an endDate is provided, add &endDate=YYYY-MM-DD
-                if (endDateValue) {
-                    queryString += `&endDate=${endDateValue}`;
-                }
-
-                // Algolia defaults to the last 7 days if neither is provided.
-
-                const endpoints = [
-                    'https://analytics.algolia.com',
-                    'https://analytics.de.algolia.com'
-                ];
-
-                for (let endpoint of endpoints) {
-                    console.log(`Trying endpoint: ${endpoint}`);
-                    response = await fetch(`${endpoint}/2/searches?${queryString}`, {
-                        headers: {
-                            'X-Algolia-API-Key': analyticsApiKey,
-                            'X-Algolia-Application-Id': applicationId
-                        }
-                    });
-
-                    if (!response.ok) {
-                        console.error(`API request failed at endpoint: ${endpoint}`);
-                        continue; // Try the next endpoint
-                    }
-
-                    searchData = await response.json();
-                    if (searchData && searchData.searches && searchData.searches.length > 0) {
-                        console.log(`Data retrieved from endpoint: ${endpoint}`);
-                        break; // Data found, exit the loop
-                    } else {
-                        console.log(`No data at endpoint: ${endpoint}`);
-                        searchData = null; 
-                    }
-                }
-
-                if (!searchData || !searchData.searches || searchData.searches.length === 0) {
-                    console.log("Analytics are empty or could not be retrieved.");
-                    document.getElementById('output1').style.display = 'block';
-                    document.getElementById('output1').innerHTML = `
-                        <p>Analytics are empty or could not be retrieved. Alternatively, you can download the CSV directly from the Algolia dashboard.</p>
-                        <a href="https://github.com/emirbelkahia/algolia-analytics-analyzer/blob/e20eda990071b8e4d67472f4cf9602cf41da129b/retrieve-analytics-csv-file-from-algolia-dashboard.jpg?raw=true"
-                            target="_blank" class="tooltip">
-                            How to download from dashboard
-                            <span class="tooltiptext">
-                                <img src="https://github.com/emirbelkahia/algolia-analytics-analyzer/blob/e20eda990071b8e4d67472f4cf9602cf41da129b/retrieve-analytics-csv-file-from-algolia-dashboard.jpg?raw=true"
-                                     alt="Instructions" style="max-width:200px;">
-                            </span>
-                        </a>
-                    `;
-                    // Smoothly scroll to the output section
-                    document.getElementById('output1').scrollIntoView({ behavior: 'smooth' });
-
-                } else {
-                    // Convert the full data to CSV
-                    console.log("API Response:", searchData);
-                    console.log("Full Search Data:", searchData.searches);
-
-                    const csvData = convertToCSV(searchData.searches);
-                    console.log("CSV Data:", csvData);
-
-                    // Let's show a preview of the first 10 lines
-                    const previewData = csvData.split('\n').slice(0, 11).join('\n');
-
-                    document.getElementById('output1').style.display = 'block';
-                    document.getElementById('output1').innerHTML = `
-                        <p>Preview of Top 10 Searches:</p>
-                        ${createPreviewTable(previewData)}
-                        <p>This is a preview of the first 10 lines. Download the full CSV file for complete data.</p>
-                    `;
-
-                    // Generate a date-time string for the filename
-                    const now = new Date();
-                    const dateTimeString = now.toISOString()
-                        .replace(/T/, '_')
-                        .replace(/\..+/, '')
-                        .replace(/:/g, '-');
-
-                    // Generate the filename
-                    const filename = `top_searches_${dateTimeString}_${applicationId}_${indexName}.csv`;
-
-                    // Provide download link for CSV
-                    const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8;' });
-                    const downloadUrl = window.URL.createObjectURL(blob);
-                    const downloadLink = document.createElement('a');
-                    downloadLink.href = downloadUrl;
-                    downloadLink.download = filename;
-                    downloadLink.textContent = 'Download Full CSV File';
-                    document.getElementById('output1').appendChild(downloadLink);
-                    
-                    // Smoothly scroll to the output section
-                    document.getElementById('output1').scrollIntoView({ behavior: 'smooth' });
-                }
-            } catch (error) {
-                console.error(error);
-                // Handle errors appropriately
-                document.getElementById('output1').style.display = 'block';
-                document.getElementById('output1').innerHTML = `<p>An error occurred while retrieving analytics data.</p>`;
-                document.getElementById('output1').scrollIntoView({ behavior: 'smooth' });
-            } finally {
-                // Hide the loading message in both success and error cases
-                document.getElementById('loadingMessage1').style.display = 'none';
-            }
+            return; // Skip the API call in debug mode
         }
-        // Show Section 2
-        document.getElementById('section2').style.display = 'block';
+
+        console.log("Debug mode is OFF. Proceeding with API call.");
+        document.getElementById('loadingMessage1').style.display = 'block';
+
+        try {
+            // Build the query string based on optional date fields
+            let queryString = `index=${indexName}&limit=1000`;
+            if (startDateValue) queryString += `&startDate=${startDateValue}`;
+            if (endDateValue) queryString += `&endDate=${endDateValue}`;
+
+            console.log("Query String:", queryString);
+
+            // Fetch data from the Analytics API
+            const endpoints = [
+                'https://analytics.algolia.com',
+                'https://analytics.de.algolia.com'
+            ];
+
+            // Try each endpoint and break on the first valid response
+            let searchData = null;
+
+            for (let endpoint of endpoints) {
+                console.log(`Trying endpoint: ${endpoint}`);
+                const response = await fetch(`${endpoint}/2/searches?${queryString}`, {
+                    headers: {
+                        'X-Algolia-API-Key': analyticsApiKey,
+                        'X-Algolia-Application-Id': applicationId
+                    }
+                });
+
+                if (response.ok) {
+                    searchData = await response.json();
+
+                    if (searchData?.searches?.length > 0) {
+                        console.log(`Data retrieved from endpoint: ${endpoint}`);
+                        break; // Exit loop on successful response
+                    }
+                }
+
+                console.error(`API request failed or no data at endpoint: ${endpoint}`);
+            }
+
+            // Handle case where no valid data was retrieved
+            if (!searchData || !searchData.searches || searchData.searches.length === 0) {
+                console.log("Analytics are empty or could not be retrieved.");
+                document.getElementById('output1').style.display = 'block';
+                document.getElementById('output1').innerHTML = `
+                    <p>Analytics are empty or could not be retrieved. Alternatively, you can download the CSV directly from the Algolia dashboard.</p>
+                    <a href="https://github.com/emirbelkahia/algolia-analytics-analyzer/blob/e20eda990071b8e4d67472f4cf9602cf41da129b/retrieve-analytics-csv-file-from-algolia-dashboard.jpg?raw=true"
+                        target="_blank" class="tooltip">
+                        How to download from dashboard
+                        <span class="tooltiptext">
+                            <img src="https://github.com/emirbelkahia/algolia-analytics-analyzer/blob/e20eda990071b8e4d67472f4cf9602cf41da129b/retrieve-analytics-csv-file-from-algolia-dashboard.jpg?raw=true"
+                                alt="Instructions" style="max-width:200px;">
+                        </span>
+                    </a>
+                `;
+                document.getElementById('output1').scrollIntoView({ behavior: 'smooth' });
+                return;
+            }
+
+            // Process and display the data
+            console.log("API Response:", searchData);
+            const csvData = convertToCSV(searchData.searches);
+            const previewData = csvData.split('\n').slice(0, 11).join('\n');
+
+            document.getElementById('output1').style.display = 'block';
+            document.getElementById('output1').innerHTML = `
+                <p>Preview of Top 10 Searches:</p>
+                ${createPreviewTable(previewData)}
+                <p>This is a preview of the first 10 lines. Download the full CSV file for complete data.</p>
+            `;
+
+            // Generate the filename and provide a download link
+            const now = new Date();
+            const dateTimeString = now.toISOString().replace(/T/, '_').replace(/\..+/, '').replace(/:/g, '-');
+            const filename = `top_searches_${dateTimeString}_${applicationId}_${indexName}.csv`;
+
+            const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8;' });
+            const downloadUrl = window.URL.createObjectURL(blob);
+            const downloadLink = document.createElement('a');
+            downloadLink.href = downloadUrl;
+            downloadLink.download = filename;
+            downloadLink.textContent = 'Download Full CSV File';
+            document.getElementById('output1').appendChild(downloadLink);
+
+            document.getElementById('output1').scrollIntoView({ behavior: 'smooth' });
+
+            // Show Section 2
+            document.getElementById('section2').style.display = 'block';
+            document.getElementById('section2').scrollIntoView({ behavior: 'smooth' });
+        } catch (error) {
+            console.error("An error occurred:", error);
+            document.getElementById('output1').style.display = 'block';
+            document.getElementById('output1').innerHTML = `<p>An error occurred while retrieving analytics data.</p>`;
+            document.getElementById('output1').scrollIntoView({ behavior: 'smooth' });
+        } finally {
+            document.getElementById('loadingMessage1').style.display = 'none';
+        }
     });
+});
 
 
 /*
