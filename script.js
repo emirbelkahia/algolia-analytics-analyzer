@@ -386,7 +386,7 @@ function getNestedAttribute(obj, path) {
 ╚════██║██╔══╝  ██║        ██║   ██║██║   ██║██║╚██╗██║     ╚═══██╗
 ███████║███████╗╚██████╗   ██║   ██║╚██████╔╝██║ ╚████║    ██████╔╝
 ╚══════╝╚══════╝ ╚═════╝   ╚═╝   ╚═╝ ╚═════╝ ╚═╝  ╚═══╝    ╚═════╝ 
-*/                                                                 
+*/
 
 /**
  * Event listener for 'form3' submission. It processes an uploaded JSON file to calculate
@@ -394,87 +394,84 @@ function getNestedAttribute(obj, path) {
  * displays a preview, and provides a download link for the full CSV file.
  */
 
-    document.getElementById('form3').addEventListener('submit', async (event) => {
-        event.preventDefault();
+document.getElementById('form3').addEventListener('submit', async (event) => {
+    event.preventDefault();
 
-        // Log the start of processing for Section 3
-        console.log("Starting processing for Section 3...");
+    // Log the start of processing for Section 3
+    console.log("Starting processing for Section 3...");
 
-        // Retrieve the JSON file uploaded by the user
-        const jsonFile = document.getElementById('jsonFile').files[0];
-        const attributeValue = document.getElementById('attributeValue').value;
-        // Retrieve the attribute to analyze from local storage
-        const attributeToRetrieve = localStorage.getItem('attributeToRetrieve');
+    // Retrieve the JSON file uploaded by the user
+    const jsonFile = document.getElementById('jsonFile').files[0];
+    const attributeValue = document.getElementById('attributeValue').value;
+    // Retrieve the attribute to analyze from local storage
+    const attributeToRetrieve = localStorage.getItem('attributeToRetrieve');
 
-        // Check if the JSON file is provided
-        if (!jsonFile) {
-            console.log("No JSON file uploaded for Section 3");
+    // Check if the JSON file is provided
+    if (!jsonFile) {
+        console.log("No JSON file uploaded for Section 3");
+        return;
+    }
+
+    // Initialize FileReader to read the JSON file
+    let reader = new FileReader();
+
+    // Define the onload event handler for FileReader
+    reader.onload = async (e) => {
+        // Parse the JSON data from the uploaded file
+        const jsonData = JSON.parse(e.target.result);
+        console.log("Loaded JSON data from file:", jsonData);
+
+        // Calculate percentages based on the specified attribute and value
+        console.log(`Calculating percentages for attribute "${attributeToRetrieve}" with value "${attributeValue}"`);
+        const percentages = calculateAttributePercentage(jsonData, attributeToRetrieve, attributeValue);
+
+        // Check if any data is available for CSV conversion
+        if (percentages.length === 0) {
+            console.log("No data to convert to CSV. The result is empty.");
             return;
         }
 
-        // Initialize FileReader to read the JSON file
-        let reader = new FileReader();
+        console.log("Calculated percentages data:", percentages);
 
-        // Define the onload event handler for FileReader
-        reader.onload = async (e) => {
-            // Parse the JSON data from the uploaded file
-            const jsonData = JSON.parse(e.target.result);
-            console.log("Loaded JSON data from file:", jsonData);
+        // Convert the calculated data to CSV format
+        const csvData = convertToCSV(percentages);
+        // Extract the first 10 lines for the preview
+        const previewData = csvData.split('\n').slice(0, 11).join('\n');
 
-            // Calculate percentages based on the specified attribute and value
-            console.log(`Calculating percentages for attribute "${attributeToRetrieve}" with value "${attributeValue}"`);
-            const percentages = calculateAttributePercentage(jsonData, attributeToRetrieve, attributeValue);
+        // Display the preview data in a table format
+        document.getElementById('output3').innerHTML = `
+            <p>Preview of Analysis (first 10 lines):</p>
+            ${createPreviewTable(previewData)}
+            <p>This is a preview of the first 10 lines. The full CSV file can be downloaded below.</p>
+        `;
 
-            // Check if any data is available for CSV conversion
-            if (percentages.length === 0) {
-                console.log("No data to convert to CSV. The result is empty.");
-                return;
-            }
+       // Generate a date-time string for the filename
+        const now = new Date();
+        const dateTimeString = now.toISOString().replace(/T/, '_').replace(/\..+/, '').replace(/:/g, '-');
 
-            console.log("Calculated percentages data:", percentages);
+        // Retrieve application ID and index name from local storage
+        const applicationId = localStorage.getItem('algoliaApplicationId');
+        const indexName = localStorage.getItem('algoliaIndexName');
 
-            // Convert the calculated data to CSV format
-            const csvData = convertToCSV(percentages);
-            // Extract the first 10 lines for the preview
-            const previewData = csvData.split('\n').slice(0, 11).join('\n');
+        // Format the filename with date-time, application ID, and index name
+        const filename = `attribute_analysis_${dateTimeString}_${applicationId}_${indexName}.csv`;
 
-            // Display the preview data in a table format
-            document.getElementById('output3').innerHTML = `
-                <p>Preview of Analysis (first 10 lines):</p>
-                ${createPreviewTable(previewData)}
-                <p>This is a preview of the first 10 lines. The full CSV file can be downloaded below.</p>
-            `;
+        // Create a Blob for the full CSV and provide a download link
+        const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8;' });
+        const downloadUrl = window.URL.createObjectURL(blob);
+        const downloadLink = document.createElement('a');
+        downloadLink.href = downloadUrl;
+        downloadLink.download = filename;
+        downloadLink.textContent = 'Download Full CSV File';
+        document.getElementById('output3').appendChild(downloadLink);
+        
+        // Display and smoothly scroll to output3
+        document.getElementById('output3').style.display = 'block';
+        document.getElementById('output3').scrollIntoView({ behavior: 'smooth' });
+    };
 
-           // Generate a date-time string for the filename
-            const now = new Date();
-            const dateTimeString = now.toISOString().replace(/T/, '_').replace(/\..+/, '').replace(/:/g, '-');
-
-            // Retrieve application ID and index name from local storage
-            const applicationId = localStorage.getItem('algoliaApplicationId');
-            const indexName = localStorage.getItem('algoliaIndexName');
-
-            // Format the filename with date-time, application ID, and index name
-            const filename = `attribute_analysis_${dateTimeString}_${applicationId}_${indexName}.csv`;
-
-            // Create a Blob for the full CSV and provide a download link
-            const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8;' });
-            const downloadUrl = window.URL.createObjectURL(blob);
-            const downloadLink = document.createElement('a');
-            downloadLink.href = downloadUrl;
-            downloadLink.download = filename;
-            downloadLink.textContent = 'Download Full CSV File';
-            document.getElementById('output3').appendChild(downloadLink);
-            
-            // Display and smoothly scroll to output3
-            document.getElementById('output3').style.display = 'block';
-            document.getElementById('output3').scrollIntoView({ behavior: 'smooth' });
-
-        };
-
-        // Read the content of the JSON file as text
-        reader.readAsText(jsonFile);
-    });
-
+    // Read the content of the JSON file as text
+    reader.readAsText(jsonFile);
 });
 
 /*
