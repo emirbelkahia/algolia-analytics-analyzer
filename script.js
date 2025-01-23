@@ -63,6 +63,10 @@ document.addEventListener("DOMContentLoaded", () => {
         const indexName = document.getElementById('indexName').value;
         const debugMode = document.getElementById('debugModeCheckbox').checked;
 
+        // Sauvegarde dans localStorage pour que Form2 puisse les relire
+        localStorage.setItem('algoliaApplicationId', applicationId);
+        localStorage.setItem('algoliaIndexName', indexName);
+        
         // Optionnel : Start / End date
         const startDateValue = document.getElementById('startDate').value;
         const endDateValue = document.getElementById('endDate').value;
