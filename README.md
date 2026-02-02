@@ -1,8 +1,8 @@
-# Algolia Product Type Analyser
+# Algolia Product Type Analyzer
 
 Analyze the composition of your Algolia search results by measuring the percentage of specific product types in top search queries.
 
-**🔗 Tool:** [emirbelkahia.com/algolia-product-type-analyser](https://emirbelkahia.com/algolia-product-type-analyser/)
+**🔗 Tool:** [emirbelkahia.com/algolia-product-type-analyzer](https://emirbelkahia.com/algolia-product-type-analyzer/)
 
 ## What it does
 
@@ -30,7 +30,7 @@ This tool helps you understand what types of products appear in your search resu
 
 ## How to use
 
-1. **Access the tool:** Visit [emirbelkahia.com/algolia-product-type-analyser](https://emirbelkahia.com/algolia-product-type-analyser/)
+1. **Access the tool:** Visit [emirbelkahia.com/algolia-product-type-analyzer](https://emirbelkahia.com/algolia-product-type-analyzer/)
 
 2. **Configure your analysis:**
    - Enter your Algolia credentials (Application ID, API Key, Index Name)
